@@ -1,0 +1,1 @@
+Nintendo Switch (gray joycons) ~ Target ~ ./data/logs/example_input.txt

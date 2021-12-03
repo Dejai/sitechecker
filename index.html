@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Site Checker Heartbeat</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        .fileEntry:before {
+            content:"> "
+        }
+        .timestamp { color: blue; font-weight: bolder;}
+        .item { font-weight:bolder; }
+        .store { font-style:italic;}
+        #heartbeatCheckTime { color:orange; }
+    </style>
+</head>
+<body>
+
+    <h1>Heartbeats</h1>
+    <p>This page shows the last time a site was checked (based on the log file).</p>
+    <p>Last Heartbeat check was = <span id="heartbeatCheckTime"></span> (checks every 5 mins)</p>
+
+    <h2>Checks</h2>
+    <div id="logArea"></div>
+
+</body>
+    <script>
+        // Get the element that will show the details for a single check
+        function getElement(identifier)
+        {
+            return document.querySelector(`#${identifier}`);
+        }
+
+        // Create the element that will show the details for a single check (if it does not exist)
+        function newElement(identifier, item, store)
+        {
+            element = `<p id="${identifier}" class="fileEntry"><span class="item">${item}</span> at <span class="store">${store}</span>: <span class="timestamp">....</span>`;
+            return element
+        }
+
+        // Check the log file for a site check, and print the last run
+        function heartbeatCheck(details)
+        {
+            // Get the details about the file
+            item = details[0];
+            store = details[1];
+            logFile = details[2];
+            identifier = logFile.replace("./data/logs/", "").replace(".txt", "")
+
+            // Get the element that will store the details
+            ele = getElement(identifier) ?? newElement(identifier, item, store);
+            
+            // If element did not already exist, add i
+            if(typeof(ele) == "string")
+            {
+                logArea = document.querySelector("#logArea");
+                logArea.innerHTML += ele;
+            }
+
+            // Get the span where to put the timestamp
+            timestampEle = document.querySelector(`#${identifier} .timestamp`);
+
+            // Now make the call to get the latest details
+            $.ajax({
+                type: "GET",
+                url: logFile
+                }).done(function( o ) {
+                    // do something
+                    rows = o.split("\n");
+                    lastEntry = rows[rows.length-2];
+                    timeStamp = lastEntry.split(" : ")[0]
+                    timestampEle.innerHTML = timeStamp;
+                });
+        }
+
+        // Get the file details from the heart beat log (to know which files to check)
+        function getHeartbeatFileDetails()
+        {
+
+            console.log("Checking heartbeat!");
+            d = new Date();
+            document.querySelector("#heartbeatCheckTime").innerText = d;
+
+            // Get the list of files from the heartbeat log
+            $.ajax({
+                type: "GET",
+                url: "./data/logs/heartbeat/_heartbeatLog.txt"
+                }).done( (content) => {
+
+                    files = content.split("\n");
+                    files.forEach( (file) =>{
+                        
+                        if (file != "")
+                        {
+                            details = file.split(" ~ ");
+                            heartbeatCheck(details);
+                        }
+                    });
+                });
+        }
+
+        // Call immediately when page loads
+        getHeartbeatFileDetails();
+
+        // Loop check every 5 mins
+        heartbeatInterval = setInterval(()=>{
+            // Get the file details
+            getHeartbeatFileDetails();
+        }, 300000);
+        
+
+        
+    </script>
+</html>

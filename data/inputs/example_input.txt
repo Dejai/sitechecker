@@ -1,0 +1,7 @@
+item	    ~	Nintendo Switch (gray joycons)
+store	    ~	Target
+url		    ~  	https://www.target.com/p/nintendo-switch-with-gray-joy-con/-/A-77464002
+check	    ~	Ship it</button>
+frequency   ~   5
+notify	    ~	1234567890@vtext.com
+fromEmail   ~   exampleEmail@gmail.com
